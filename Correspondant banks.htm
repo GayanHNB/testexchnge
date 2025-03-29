@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HNB Correspondent Banking Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        #bankTable th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+            margin-top: 100px;
+        }
+        
+        .admin-nav {
+            background-color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .responsive-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Public Banking Portal -->
+    <div id="publicPortal">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-university me-2"></i>HNB Correspondent Banks
+                </a>
+                <button class="btn btn-outline-primary ms-auto" onclick="showLogin()">
+                    Admin Login <i class="fas fa-sign-in-alt ms-1"></i>
+                </button>
+            </div>
+        </nav>
+
+        <div class="container my-5">
+            <div class="row mb-4">
+                <div class="col-md-8 mx-auto text-center">
+                    <h2 class="mb-3">HNB Global Correspondent Banking Network</h2>
+                    <p class="lead">Find correspondent banking partners worldwide</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-search me-2"></i>Find Banks</h5>
+                            <div class="mb-3">
+                                <label for="countrySelect" class="form-label">Select Country</label>
+                                <select id="countrySelect" class="form-select">
+                                    <option value="">-- Select a country --</option>
+                                    <!-- Countries will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bankSearch" class="form-label">Search Bank Name</label>
+                                <input type="text" id="bankSearch" class="form-control" placeholder="Enter bank name...">
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="loadBanks()">
+                                <i class="fas fa-list me-1"></i> Show Banks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-university me-2"></i>Bank Directory</h5>
+                            <div class="table-responsive responsive-table">
+                                <table id="bankTable" class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Bank Name</th>
+                                            <th>Address</th>
+                                            <th>SWIFT Code</th>
+                                            <th>Country</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bankTableBody">
+                                        <!-- Banks will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <div>
+                                    <span class="text-muted" id="bankCountDisplay">Showing 0 banks</span>
+                                </div>
+                                <div>
+                                    <button class="btn btn-outline-secondary me-2" onclick="exportToCSV()">
+                                        <i class="fas fa-file-csv me-1"></i> Export CSV
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="exportToPDF()">
+                                        <i class="fas fa-file-pdf me-1"></i> Export PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login -->
+    <div id="loginSection" class="container-fluid" style="display: none; background-color: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000;">
+        <div class="login-container card">
+            <div class="card-body">
+                <button type="button" class="btn-close float-end" onclick="hideLogin()"></button>
+                <h3 class="card-title text-center mb-4">Admin Login</h3>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="loginEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" style="display: none;">
+        <nav class="navbar navbar-dark admin-nav navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-university me-2"></i>Admin Panel
+                </a>
+                <button class="btn btn-outline-light" onclick="logout()">
+                    Logout <i class="fas fa-sign-out-alt ms-1"></i>
+                </button>
+            </div>
+        </nav>
+
+        <div class="container-fluid mt-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Navigation</h5>
+                            <ul class="nav flex-column">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#" onclick="showAdminSection('dashboard')">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#" onclick="showAdminSection('countries')">
+                                        <i class="fas fa-globe me-2"></i>Countries
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#" onclick="showAdminSection('banks')">
+                                        <i class="fas fa-university me-2"></i>Banks
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#" onclick="showAdminSection('users')">
+                                        <i class="fas fa-users me-2"></i>Users
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#" onclick="showAdminSection('audit')">
+                                        <i class="fas fa-clipboard-list me-2"></i>Audit Logs
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <!-- Dashboard Section -->
+                    <div id="adminDashboard" class="admin-section">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card bg-primary text-white">
+                                            <div class="card-body">
+                                                <h6 class="card-subtitle mb-2">Countries</h6>
+                                                <h3 class="card-title" id="countryCount">0</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card bg-success text-white">
+                                            <div class="card-body">
+                                                <h6 class="card-subtitle mb-2">Banks</h6>
+                                                <h3 class="card-title" id="bankCount">0</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card bg-warning text-dark">
+                                            <div class="card-body">
+                                                <h6 class="card-subtitle mb-2">Recent Activity</h6>
+                                                <h3 class="card-title" id="activityCount">0</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <h6>Recent Activity</h6>
+                                    <ul class="list-group" id="recentActivityList">
+                                        <!-- Recent activity will be loaded here -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Countries Management -->
+                    <div id="adminCountries" class="admin-section" style="display: none;">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0"><i class="fas fa-globe me-2"></i>Countries</h5>
+                                    <button class="btn btn-primary btn-sm" onclick="showAddCountryModal()">
+                                        <i class="fas fa-plus me-1"></i> Add Country
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Code</th>
+                                                <th>Bank Count</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="countryTableBody">
+                                            <!-- Countries will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banks Management -->
+                    <div id="adminBanks" class="admin-section" style="display: none;">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0"><i class="fas fa-university me-2"></i>Banks</h5>
+                                    <div>
+                                        <button class="btn btn-primary btn-sm me-2" onclick="showAddBankModal()">
+                                            <i class="fas fa-plus me-1"></i> Add Bank
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" onclick="showImportModal()">
+                                            <i class="fas fa-file-import me-1"></i> Import CSV
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Country</th>
+                                                <th>SWIFT</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bankAdminTableBody">
+                                            <!-- Banks will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users Management -->
+                    <div id="adminUsers" class="admin-section" style="display: none;">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-users me-2"></i>User Management</h5>
+                                <p class="text-muted">User management section will be implemented here</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Logs -->
+                    <div id="adminAudit" class="admin-section" style="display: none;">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-clipboard-list me-2"></i>Audit Logs</h5>
+                                <p class="text-muted">Audit log section will be implemented here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="addCountryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="countryModalTitle">Add New Country</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="countryForm">
+                        <div class="mb-3">
+                            <label for="countryName" class="form-label">Country Name</label>
+                            <input type="text" class="form-control" id="countryName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="countryCode" class="form-label">Country Code (ISO 2-letter)</label>
+                            <input type="text" class="form-control" id="countryCode" maxlength="2" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCountry()">Save Country</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addBankModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bankModalTitle">Add New Bank</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bankForm">
+                        <div class="mb-3">
+                            <label for="bankName" class="form-label">Bank Name</label>
+                            <input type="text" class="form-control" id="bankName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bankCountry" class="form-label">Country</label>
+                            <select class="form-select" id="bankCountry" required>
+                                <option value="">-- Select Country --</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bankAddress" class="form-label">Address</label>
+                            <textarea class="form-control" id="bankAddress" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bankSwift" class="form-label">SWIFT Code</label>
+                            <input type="text" class="form-control" id="bankSwift" required>
+                            <small class="text-muted">Format: AAAAAABB or AAAAAABBBBB</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBank()">Save Bank</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Import Banks from CSV</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="csvFile" class="form-label">Select CSV File</label>
+                        <input class="form-control" type="file" id="csvFile" accept=".csv">
+                    </div>
+                    <div class="alert alert-info">
+                        <strong>CSV Format:</strong> Bank Name,Country Code,Address,SWIFT Code
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="importCSV()">Import</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <script>
+        // Complete dataset with all banks from the provided document
+        const completeData = {
+            countries: [
+                { id: 1, name: "Argentina", code: "AR" },
+                { id: 2, name: "Australia", code: "AU" },
+                { id: 3, name: "Austria", code: "AT" },
+                { id: 4, name: "Bahrain", code: "BH" },
+                { id: 5, name: "Bangladesh", code: "BD" },
+                { id: 6, name: "Belgium", code: "BE" },
+                { id: 7, name: "Bolivia", code: "BO" },
+                { id: 8, name: "Brazil", code: "BR" },
+                { id: 9, name: "Bulgaria", code: "BG" },
+                { id: 10, name: "Canada", code: "CA" },
+                { id: 11, name: "Channel Islands", code: "JE" },
+                { id: 12, name: "China", code: "CN" },
+                { id: 13, name: "Colombia", code: "CO" },
+                { id: 14, name: "Cyprus", code: "CY" },
+                { id: 15, name: "Czech Republic", code: "CZ" },
+                { id: 16, name: "Denmark", code: "DK" },
+                { id: 17, name: "Ecuador", code: "EC" },
+                { id: 18, name: "Egypt", code: "EG" },
+                { id: 19, name: "Ethiopia", code: "ET" },
+                { id: 20, name: "Finland", code: "FI" },
+                { id: 21, name: "France", code: "FR" },
+                { id: 22, name: "Georgia", code: "GE" },
+                { id: 23, name: "Germany", code: "DE" },
+                { id: 24, name: "Greece", code: "GR" },
+                { id: 25, name: "Hong Kong", code: "HK" },
+                { id: 26, name: "Hungary", code: "HU" },
+                { id: 27, name: "India", code: "IN" },
+                { id: 28, name: "Indonesia", code: "ID" },
+                { id: 29, name: "Ireland", code: "IE" },
+                { id: 30, name: "Isle of Man", code: "IM" },
+                { id: 31, name: "Israel", code: "IL" },
+                { id: 32, name: "Italy", code: "IT" },
+                { id: 33, name: "Japan", code: "JP" },
+                { id: 34, name: "Jordan", code: "JO" },
+                { id: 35, name: "Kenya", code: "KE" },
+                { id: 36, name: "South Korea", code: "KR" },
+                { id: 37, name: "Kosovo", code: "XK" },
+                { id: 38, name: "Kuwait", code: "KW" },
+                { id: 39, name: "Latvia", code: "LV" },
+                { id: 40, name: "Lebanon", code: "LB" },
+                { id: 41, name: "Liechtenstein", code: "LI" },
+                { id: 42, name: "Luxembourg", code: "LU" },
+                { id: 43, name: "Macedonia", code: "MK" },
+                { id: 44, name: "Malaysia", code: "MY" },
+                { id: 45, name: "Maldives", code: "MV" },
+                { id: 46, name: "Mauritius", code: "MU" },
+                { id: 47, name: "Mexico", code: "MX" },
+                { id: 48, name: "Nepal", code: "NP" },
+                { id: 49, name: "Netherlands", code: "NL" },
+                { id: 50, name: "New Zealand", code: "NZ" },
+                { id: 51, name: "Norway", code: "NO" },
+                { id: 52, name: "Oman", code: "OM" },
+                { id: 53, name: "Pakistan", code: "PK" },
+                { id: 54, name: "Peru", code: "PE" },
+                { id: 55, name: "Philippines", code: "PH" },
+                { id: 56, name: "Poland", code: "PL" },
+                { id: 57, name: "Portugal", code: "PT" },
+                { id: 58, name: "Qatar", code: "QA" },
+                { id: 59, name: "Romania", code: "RO" },
+                { id: 60, name: "Saudi Arabia", code: "SA" },
+                { id: 61, name: "Seychelles", code: "SC" },
+                { id: 62, name: "Singapore", code: "SG" },
+                { id: 63, name: "South Africa", code: "ZA" },
+                { id: 64, name: "Spain", code: "ES" },
+                { id: 65, name: "Sweden", code: "SE" },
+                { id: 66, name: "Switzerland", code: "CH" },
+                { id: 67, name: "Taiwan", code: "TW" },
+                { id: 68, name: "Thailand", code: "TH" },
+                { id: 69, name: "Turkey", code: "TR" },
+                { id: 70, name: "United Arab Emirates", code: "AE" },
+                { id: 71, name: "United Kingdom", code: "GB" },
+                { id: 72, name: "United States", code: "US" },
+                { id: 73, name: "Vietnam", code: "VN" }
+            ],
+            banks: [
+                // Argentina
+                { id: 1, country_id: 1, name: "BBVA Banco Francés SA", address: "Reconquista 199, Capital Federal, 1003 Buenos Aires, Argentina", swift_code: "BFRPARBA" },
+                
+                // Australia
+                { id: 2, country_id: 2, name: "Australia and New Zealand Banking Group Limited (ANZ Bank)", address: "ANZ Centre Melbourne, Level 9, 833 Collins Street, Docklands, VIC 3008, Australia", swift_code: "ANZBAU3M" },
+                { id: 3, country_id: 2, name: "Citigroup Pty Limited", address: "2 Park Street, Sydney, NSW 2000, Australia", swift_code: "CITIAU2X" },
+                { id: 4, country_id: 2, name: "Commonwealth Bank of Australia", address: "Commonwealth Bank Place South, Level 1, 11 Harbour Street, Sydney, NSW 2000, Australia", swift_code: "CTBAAU2S" },
+                { id: 5, country_id: 2, name: "HSBC Bank Australia Limited", address: "Level 36, Tower 1, International Towers Sydney, 100 Barangaroo Avenue, Sydney, NSW 2000, Australia", swift_code: "HKBAAU2S" },
+                { id: 6, country_id: 2, name: "JPMorgan Chase Bank NA, Australia", address: "85 Castlereagh Street, Sydney, NSW 2000, Australia", swift_code: "CHASAU2X" },
+                { id: 7, country_id: 2, name: "National Australia Bank Ltd", address: "800 Bourke Street, Docklands, Melbourne, VIC 3008, Australia", swift_code: "NATAAU33" },
+                
+                // Austria
+                { id: 8, country_id: 3, name: "Erste Bank der oesterreichischen Sparkassen AG", address: "Am Belvedere 1, 1100 Vienna, Austria", swift_code: "GIBAATWW" },
+                { id: 9, country_id: 3, name: "Raiffeisenlandesbank Niederösterreich-Wien AG", address: "Friedrich-Wilhelm-Raiffeisen-Platz 1, A-1020 Vienna, Austria", swift_code: "RLNWATWW" },
+                { id: 10, country_id: 3, name: "UniCredit Bank Austria AG", address: "Rothschildplatz 1, 1020, Vienna, Austria", swift_code: "BKAUATWW" },
+                
+                // Bahrain
+                { id: 11, country_id: 4, name: "Alubaf Arab International Bank BSC (c)", address: "Alubaf Tower, Building 854, Road 3618, Avenue 436, AL Seef District, Manama, Bahrain", swift_code: "ALUBBHEM" },
+                { id: 12, country_id: 4, name: "Arab Banking Corporation (BSC)", address: "P.O. Box 5698, ABC Tower, Diplomatic Area, Manama, Bahrain", swift_code: "ABCOBHEM" },
+                { id: 13, country_id: 4, name: "BBK BSC", address: "PO Box 597, 43 Government Avenue, Manama 305, Bahrain", swift_code: "BBKUBHEM" },
+                { id: 14, country_id: 4, name: "National Bank of Bahrain BSC", address: "PO Box 106, Government Avenue, Manama, Bahrain", swift_code: "NBOBBHEM" },
+                
+                // Bangladesh
+                { id: 15, country_id: 5, name: "AB Bank Limited", address: "Corporate Head Office, 'The Skymark', 18 Gulshan Avenue, Gulshan – 1, Dhaka, 1212, Bangladesh", swift_code: "ABBLBDDH" },
+                { id: 16, country_id: 5, name: "Jamuna Bank Limited", address: "Jamuna Bank Tower, Plot #14, Bir Uttam A. K. Khandaker Road, Block# C, Gulshan-1, Dhaka, Bangladesh", swift_code: "JAMUBDDH" },
+                { id: 17, country_id: 5, name: "Standard Chartered Bank", address: "Alico Building, 18-20 Motijheel C/A, Dhaka 1000, Bangladesh", swift_code: "SCBLBDDX" },
+                
+                // Belgium
+                { id: 18, country_id: 6, name: "Belfius Bank SA/NV (former Dexia Bank Belgium SA)", address: "Place Charles Rogier 11 B, 1000 Brussels, Belgium", swift_code: "GKCCBEBB" },
+                { id: 19, country_id: 6, name: "BNP Paribas Fortis SA/NV", address: "2FA3A Jodenstraat 172000, Antwerp, Belgium", swift_code: "GEBABEBB" },
+                { id: 20, country_id: 6, name: "KBC Bank NV", address: "Havenlaan 2, 1080 Brussels, Belgium", swift_code: "KREDBEBB" },
+                
+                // Bolivia
+                { id: 21, country_id: 7, name: "Banco BISA SA (BISA)", address: "PO Box 1290, Avenida 16 de Julio, (Paseo El Prado) 1628, La Paz, Bolivia", swift_code: "BANIBOLX" },
+                
+                // Brazil
+                { id: 22, country_id: 8, name: "Banco Citibank SA", address: "Andar 2° Parte, Avenida Paulista 1111, 01311-920 Bela Vista, SP, Brazil", swift_code: "CITIBRBR" },
+                
+                // Bulgaria
+                { id: 23, country_id: 9, name: "UniCredit Bulbank AD", address: "7 Sveta Nedelya Sq, 1000 Sofia, Bulgaria", swift_code: "UNCRBGSF" },
+                
+                // Canada
+                { id: 24, country_id: 10, name: "Canadian Imperial Bank of Commerce (CIBC)", address: "81 Bay Street, CIBC Square, Toronto, ON M5L 1A2, Canada", swift_code: "CIBCCATT" },
+                { id: 25, country_id: 10, name: "HSBC Bank Canada", address: "885 West Georgia Street, Vancouver, BC V6C 3E9, Canada", swift_code: "HKBCCATT" },
+                { id: 26, country_id: 10, name: "JPMorgan Chase Bank, Canada", address: "66 Wellington Street West, Suite 4500, TD Bank Tower, Toronto, Ontario M5K 1E7, Canada", swift_code: "CHASCATT" },
+                
+                // Channel Islands
+                { id: 27, country_id: 11, name: "The Royal Bank of Scotland International Limited", address: "PO Box 64, Royal Bank House, 71 Bath Street, St. Helier, Jersey JE4 8PJ, Channel Islands", swift_code: "RBOSJESX" },
+                
+                // China
+                { id: 28, country_id: 12, name: "Bank of China Limited", address: "1 Fuxingmen Nei Dajie, Beijing 100818, China", swift_code: "BKCHCNBJ" },
+                { id: 29, country_id: 12, name: "Industrial & Commercial Bank of China Limited", address: "55 Fuxingmennei Dajie, Xicheng District, Beijing 100031, China", swift_code: "ICBKCNBJ" },
+                { id: 30, country_id: 12, name: "China Construction Bank Corporation", address: "25 Finance Street, Xicheng District, Beijing 100032, China", swift_code: "PCBCCNBJ" },
+                
+                // Colombia
+                { id: 31, country_id: 13, name: "Banco Popular [Banco Popular (Colombia)]", address: "PO Box 6769, Calle 17 No 7-43, Piso 3, Bogotá, Distrito Capital, Colombia", swift_code: "BPOPCOBB" },
+                
+                // Cyprus
+                { id: 32, country_id: 14, name: "Bank of Cyprus Public Company Limited", address: "51 Stassinos Str - Ayia Paraskevi, Strovolos, Nicosia, Cyprus", swift_code: "BCYPCY2N" },
+                { id: 33, country_id: 14, name: "Hellenic Bank Public Company Limited", address: "PO Box 24747, 1394 Nicosia, Cyprus", swift_code: "HEBACY2N" },
+                
+                // Czech Republic
+                { id: 34, country_id: 15, name: "Československá obchodní banka a.s. (CSOB)", address: "Radlická 333/150, 150 57 Prague 5, Czech Republic", swift_code: "CEKOCZPP" },
+                { id: 35, country_id: 15, name: "UniCredit Bank Czech Republic a.s.", address: "Zeletavská 1525/1, 140 92 Prague 4, Czech Republic", swift_code: "BACXCZPP" },
+                
+                // Denmark
+                { id: 36, country_id: 16, name: "Danske Bank A/S", address: "Bernstorffsgade 40, DK-1577 Copenhagen, Denmark", swift_code: "DABADKKK" },
+                { id: 37, country_id: 16, name: "Nordea Bank AB (publ)", address: "Satamaradankatu 500020, Helsinki, Denmark", swift_code: "NDEADKKK" },
+                
+                // Ecuador
+                { id: 38, country_id: 17, name: "Banco Pichincha CA", address: "Edificio Casa Vivanco Piso 2, Av Amazonas 4600 y Pereira, Quito, Pichincha, Ecuador", swift_code: "PICHECEQ" },
+                
+                // Egypt
+                { id: 39, country_id: 18, name: "Arab International Bank", address: "35 Abdel Khalek Sarwat Street, Cairo, Egypt", swift_code: "ARIBEGCX" },
+                { id: 40, country_id: 18, name: "Société Arabe Internationale de Banque (SAIB)", address: "56 Gamaeat El Dowal Al Arabia Street, Mohandessin, Giza, Cairo, Egypt", swift_code: "SBNKEGCX" },
+                
+                // Ethiopia
+                { id: 41, country_id: 19, name: "Commercial Bank of Ethiopia", address: "PO Box 255, Gambia Street, Addis Ababa, Ethiopia", swift_code: "CBETETA" },
+                
+                // Finland
+                { id: 42, country_id: 20, name: "Nordea Bank AB (publ)", address: "Aleksanterinkatu 36B, FI-00100 Helsinki, Finland", swift_code: "NDEAFIHH" },
+                
+                // France
+                { id: 43, country_id: 21, name: "BNP Paribas SA", address: "16 Boulevard des Italiens, 75009 Paris, France", swift_code: "BNPAFRPP" },
+                { id: 44, country_id: 21, name: "Société Générale", address: "Tour Société Générale, 17 Cours Valmy, 92972 Paris La Défense, France", swift_code: "SOGEFRPP" },
+                
+                // Georgia
+                { id: 45, country_id: 22, name: "TBC Bank JSC", address: "Head Office, 7 Marjanishvili Str, 0102 Tbilisi, Georgia", swift_code: "TBCBGE22" },
+                
+                // Germany
+                { id: 46, country_id: 23, name: "Commerzbank AG", address: "D-60261 Frankfurt am Main, Germany", swift_code: "COBADEFF" },
+                { id: 47, country_id: 23, name: "Deutsche Bank AG", address: "D-60262 Frankfurt am Main, Germany", swift_code: "DEUTDEFF" },
+                
+                // Greece
+                { id: 48, country_id: 24, name: "Eurobank SA", address: "8 Othonos Street, GR 105 57 Athens, Attica, Greece", swift_code: "ERBKGRAA" },
+                { id: 49, country_id: 24, name: "National Bank of Greece SA", address: "86 Aeolou Street, Cotzia Square, GR 102 32 Athens, Attica, Greece", swift_code: "ETHNGRAA" },
+                
+                // Hong Kong
+                { id: 50, country_id: 25, name: "Standard Chartered Bank (Hong Kong) Limited", address: "32nd Floor, Standard Chartered Bank Bldg, 4-4a Des Voeux Rd Central, Hong Kong", swift_code: "SCBLHKHH" },
+                { id: 51, country_id: 25, name: "HSBC (The Hongkong and Shanghai Banking Corporation Limited)", address: "HSBC Main Building, 1 Queen Road Central, Hong Kong", swift_code: "HSBCHKHH" },
+                
+                // Hungary
+                { id: 52, country_id: 26, name: "Raiffeisen Bank Zrt", address: "Akadémia utca 6, H-1054 Budapest, Hungary", swift_code: "UBRTHUHB" },
+                
+                // India
+                { id: 53, country_id: 27, name: "Axis Bank Ltd", address: "3rd Floor, Trishul, Opp Samartheshwar Temple, Law Garden, Ellis Bridge, Ahmedabad, 380 006, Gujarat, India", swift_code: "AXISINBB" },
+                { id: 54, country_id: 27, name: "HDFC Bank Ltd", address: "HDFC Bank House, Senapati Bapat Marg, Lower Parel, Mumbai 400 013, Maharashtra, India", swift_code: "HDFCINBB" },
+                { id: 55, country_id: 27, name: "ICICI Bank Limited", address: "ICICI Bank Towers, Vadodara, Gujarat, India", swift_code: "ICICINBB" },
+                { id: 56, country_id: 27, name: "State Bank of India", address: "Corporate Centre, Madame Cama Road, Mumbai 400 021, Maharashtra, India", swift_code: "SBININBB" },
+                
+                // Indonesia
+                { id: 57, country_id: 28, name: "PT Bank Mandiri (Persero) Tbk", address: "Plaza Mandiri, Jl. Jend Gatot Subroto Kav 36-38, Jakarta 12190, Java, Indonesia", swift_code: "BMRIIDJA" },
+                { id: 58, country_id: 28, name: "PT Bank Negara Indonesia (Persero) Tbk (BNI)", address: "Jalan Jenderal Sudirman Kav 1, Jakarta 10220, Java, Indonesia", swift_code: "BNINIDJA" },
+                
+                // Ireland
+                { id: 59, country_id: 29, name: "Bank of Ireland", address: "40 Mespil Road, Dublin 4, Ireland", swift_code: "BOFIIE2D" },
+                { id: 60, country_id: 29, name: "Citibank Europe Plc", address: "1 North Wall Quay, Dublin 1, Ireland", swift_code: "CITIIE2X" },
+                
+                // Isle of Man
+                { id: 61, country_id: 30, name: "Isle of Man Bank Limited", address: "PO Box 13, 2 Athol Street, Douglas, IM99 1AN, Isle of Man", swift_code: "RBOSIMD2" },
+                
+                // Israel
+                { id: 62, country_id: 31, name: "Bank Hapoalim BM", address: "PO Box 27, 50 Rothschild Blvd, Tel Aviv 61000, Israel", swift_code: "POPLILIT" },
+                { id: 63, country_id: 31, name: "Bank Leumi le-Israel BM", address: "24-32 Yehuda Halevi St, Tel Aviv 65546, Israel", swift_code: "LUMLIT" },
+                
+                // Italy
+                { id: 64, country_id: 32, name: "Banca Monte dei Paschi di Siena SpA", address: "Piazza Salimbeni 3, 53100 Siena, Italy", swift_code: "PASCITMM" },
+                { id: 65, country_id: 32, name: "Intesa Sanpaolo SpA", address: "Via Monte di Pietà 8, I-20121 Milan, Italy", swift_code: "BCITITMM" },
+                
+                // Japan
+                { id: 66, country_id: 33, name: "MUFG Bank Ltd", address: "7-1 Marunouchi, 2-Chome, Chiyoda-ku, Tokyo 100-8388, Japan", swift_code: "BOTKJPJT" },
+                { id: 67, country_id: 33, name: "Sumitomo Mitsui Banking Corporation", address: "1-2 Marunouchi, 1-chome, Chiyoda-ku, Tokyo 100-0005, Japan", swift_code: "SMBCJPJT" },
+                
+                // Jordan
+                { id: 68, country_id: 34, name: "Arab Bank plc", address: "PO Box 950545, Shaker Bin Zaid Street, Shmeisani, 11195 Amman, Jordan", swift_code: "ARABJOAX" },
+                
+                // Kenya
+                { id: 69, country_id: 35, name: "KCB Bank Kenya Limited", address: "PO Box 48400-00100 GPO, Kencom House, Moi Avenue, Nairobi, Kenya", swift_code: "KCBLKENX" },
+                
+                // South Korea
+                { id: 70, country_id: 36, name: "KEB Hana Bank", address: "181 Eulji-ro 2-ga, Chung-gu, Seoul 100-793, South Korea", swift_code: "KOEXKRSE" },
+                { id: 71, country_id: 36, name: "Kookmin Bank", address: "9-1 Namdaemunno 2-Ga, Jung-Gu, Seoul 100-703, South Korea", swift_code: "CZNBKRSE" },
+                
+                // Kosovo
+                { id: 72, country_id: 37, name: "Raiffeisen Bank Kosovo", address: "UÇK Street No. 51, 10000 Pristina, Kosovo", swift_code: "RBKOXKPR" },
+                
+                // Kuwait
+                { id: 73, country_id: 38, name: "National Bank of Kuwait SAK", address: "PO Box 95, Abdullah Al Ahmed Street, Safat, 13001 Kuwait City, Kuwait", swift_code: "NBOKKWKW" },
+                
+                // Latvia
+                { id: 74, country_id: 39, name: "AS Rietumu Banka", address: "7 Vesetas Street, LV-1013 Riga, Latvia", swift_code: "RTMBLV2X" },
+                
+                // Lebanon
+                { id: 75, country_id: 40, name: "BankMed SAL", address: "BankMed Center, 482 Clemenceau Street, Kantari, 2022 9302 Beirut, Lebanon", swift_code: "MEDLLBBX" },
+                
+                // Liechtenstein
+                { id: 76, country_id: 41, name: "Liechtensteinische Landesbank Aktiengesellschaft", address: "PO Box 384, Städtle 44, 9490 Vaduz, Liechtenstein", swift_code: "LILALI2X" },
+                
+                // Luxembourg
+                { id: 77, country_id: 42, name: "The Royal Bank of Scotland International Limited", address: "46 Avenue J F Kennedy, L-1855, Luxembourg", swift_code: "RBOSJESX" },
+                
+                // Macedonia
+                { id: 78, country_id: 43, name: "Halk Banka AD Skopje", address: "Blvd Mito Hadzivasilev Jasmin BB, 1000 Skopje, Macedonia", swift_code: "EXPCMK22" },
+                
+                // Malaysia
+                { id: 79, country_id: 44, name: "Malayan Banking Berhad (Maybank)", address: "Menara Maybank, 100 Jalan Tun Perak, 50050 Kuala Lumpur, Malaysia", swift_code: "MBBEMYKL" },
+                { id: 80, country_id: 44, name: "CIMB Bank Berhad", address: "No 6 Jalan Tun Perak, 50050 Kuala Lumpur, Malaysia", swift_code: "CIBBMYKL" },
+                
+                // Maldives
+                { id: 81, country_id: 45, name: "Bank of Maldives PLC", address: "11 Boduthakurufaanu Magu, Male 20094, Maldives", swift_code: "MALBMVMV" },
+                
+                // Mauritius
+                { id: 82, country_id: 46, name: "AfrAsia Bank Limited", address: "Bowen Square, 10 Dr Ferriere Street, Port Louis, Mauritius", swift_code: "AFBLMUMU" },
+                
+                // Mexico
+                { id: 83, country_id: 47, name: "Banco Nacional de Mexico SA (Banamex)", address: "Emilio Castelar 75, Col Polanco, 11560 México City", swift_code: "BNMXMXMM" },
+                
+                // Nepal
+                { id: 84, country_id: 48, name: "Nabil Bank Limited", address: "PO Box 3729, Nabil Centre, Beena Marg, Dubar Marg, Kathmandu, Kathmandu Valley, Nepal", swift_code: "NARBNPKA" },
+                
+                // Netherlands
+                { id: 85, country_id: 49, name: "ABN AMRO Bank NV", address: "Gustav Mahlerlaan 10, PO Box 238, 1000 EA Amsterdam, Netherlands", swift_code: "ABNANL2A" },
+                
+                // New Zealand
+                { id: 86, country_id: 50, name: "ANZ Bank New Zealand Limited", address: "Level 10, 170-186 Featherston Street, Wellington 6011, New Zealand", swift_code: "ANZBNZ22" },
+                
+                // Norway
+                { id: 87, country_id: 51, name: "DNB Bank ASA", address: "Stranden 21, NO-0021 Oslo, Norway", swift_code: "DNBANOKK" },
+                
+                // Oman
+                { id: 88, country_id: 52, name: "BankMuscat SAOG", address: "Street No. 62, Building No. 120/4, Block No. 311, Airport Heights, Seeb, Oman", swift_code: "SNOWNO22" },
+                
+                // Pakistan
+                { id: 89, country_id: 53, name: "Habib Bank Limited", address: "9th Floor, HBL Tower, Jinnah Avenue, Blue Area, Islamabad, Pakistan", swift_code: "HABBPKKA" },
+                { id: 90, country_id: 53, name: "National Bank of Pakistan", address: "NBP Building, I.I. Chundrigar Road, Karachi, Pakistan", swift_code: "NBPAPKKA" },
+                
+                // Peru
+                { id: 91, country_id: 54, name: "Banco Continental (BBVA Banco Continental)", address: "Avenida Republica de Panama 3055, Lima, Peru", swift_code: "BCONPEPL" },
+                
+                // Philippines
+                { id: 92, country_id: 55, name: "Asian Development Bank", address: "6 ADB Avenue, Mandaluyong City 1550, Metro Manila, Luzon, Philippines", swift_code: "ASDBPHMM" },
+                
+                // Poland
+                { id: 93, country_id: 56, name: "Bank Pekao SA", address: "ul Grzybowska 53/57, 00-950 Warsaw, Poland", swift_code: "PKOPPLPW" },
+                
+                // Portugal
+                { id: 94, country_id: 57, name: "Novo Banco SA", address: "Avenida da Liberdade 195, 1250-142 Lisbon, Portugal", swift_code: "BESCPTPL" },
+                
+                // Qatar
+                { id: 95, country_id: 58, name: "Qatar National Bank SAQ", address: "PO Box 1000, Cornish St, Doha, Qatar", swift_code: "QNBAAQA" },
+                
+                // Romania
+                { id: 96, country_id: 59, name: "Banca Comerciala Romana SA", address: "5 Regina Elisabeta Bulevard, 3rd district, 030016 Bucharest, Romania", swift_code: "RNCBROBU" },
+                
+                // Saudi Arabia
+                { id: 97, country_id: 60, name: "Al Rajhi Bank", address: "PO Box 28, Al Akariya Building, Oleya Street, Riyadh 11411, Saudi Arabia", swift_code: "RJHISARI" },
+                
+                // Seychelles
+                { id: 98, country_id: 61, name: "Bank of Ceylon", address: "2 Floor, Capital City Building, 2-05 Independence Avenue, Victoria, Mahe, Seychelles", swift_code: "BCEYSCSC" },
+                
+                // Singapore
+                { id: 99, country_id: 62, name: "DBS Bank Ltd", address: "DBS Building, Tower 1, 6 Shenton Way, Singapore 068809", swift_code: "DBSSGSG" },
+                { id: 100, country_id: 62, name: "Standard Chartered Bank", address: "6 Battery Rd, Singapore 049909", swift_code: "SCBLSGSG" },
+                
+                // South Africa
+                { id: 101, country_id: 63, name: "Standard Bank of South Africa Ltd", address: "9th Floor, Standard Bank Centre, 5 Simmonds Street, Johannesburg 2001, South Africa", swift_code: "SBZAZAJJ" },
+                
+                // Spain
+                { id: 102, country_id: 64, name: "Banco Santander SA", address: "Ciudad Grupo Santander, Ave de Cantabria s/n, 28660 Boadilla del Monte, Madrid, Spain", swift_code: "BSCHESMM" },
+                
+                // Sweden
+                { id: 103, country_id: 65, name: "Nordea Bank AB (publ)", address: "Hamngatan 10, SE-105 71 Stockholm, Sweden", swift_code: "NDEASESS" },
+                
+                // Switzerland
+                { id: 104, country_id: 66, name: "UBS AG", address: "Bahnhofstrasse 45, CH-8001 Zürich, Switzerland", swift_code: "UBSWCHZH" },
+                
+                // Taiwan
+                { id: 105, country_id: 67, name: "Citibank Taiwan Limited", address: "1st & 2nd Floor, No. 1 Songjhih Rd, Taipei City 110, Taiwan", swift_code: "CITITWTX" },
+                
+                // Thailand
+                { id: 106, country_id: 68, name: "Bangkok Bank Public Company Limited", address: "333 Silom Road, Suriwongse, Bangrak, Bangkok 10500, Thailand", swift_code: "BKKBTHBK" },
+                
+                // Turkey
+                { id: 107, country_id: 69, name: "Türkiye İş Bankası AS (ISBANK)", address: "İş Kuleleri, 34330 Levent, Istanbul, Turkey", swift_code: "ISBKTRIS" },
+                
+                // United Arab Emirates
+                { id: 108, country_id: 70, name: "Emirates NBD PJSC", address: "PO Box 777, Dubai City, UAE", swift_code: "EBILAEAD" },
+                { id: 109, country_id: 70, name: "Abu Dhabi Commercial Bank PJSC", address: "PO Box 939, Abu Dhabi Commercial Bank Building, Al Salam Street, Abu Dhabi, UAE", swift_code: "ADCBAEAA" },
+                { id: 110, country_id: 70, name: "Arab Bank for Investment and Foreign Trade (Al Masraf)", address: "PO Box 46733, AL-MASRAF Building, Sh Hamdan Street, Tourist Club Area, Abu Dhabi, UAE", swift_code: "ABINAEAA" },
+                { id: 111, country_id: 70, name: "Bank of Sharjah", address: "PO Box 1394, Al Hosn Avenue, Sharjah, UAE", swift_code: "SHARAEAS" },
+                { id: 112, country_id: 70, name: "Commercial Bank of Dubai PSC", address: "PO Box 2668, Al Ittihad Street, (Port Saeed), Deira, Dubai City, UAE", swift_code: "CBDUAEAD" },
+                { id: 113, country_id: 70, name: "Dubai Islamic Bank PJSC", address: "PO Box 1080, Airport Road, Deira, Dubai City, UAE", swift_code: "DUIBAEAD" },
+                { id: 114, country_id: 70, name: "Emirates Islamic Bank PJSC", address: "PO Box 6564, Dubai Festival City, Deira, Dubai City, UAE", swift_code: "MEBLAEAD" },
+                { id: 115, country_id: 70, name: "First Abu Dhabi Bank PJSC (merger with First Gulf Bank & National Bank of Abu Dhabi)", address: "PO Box 4, One NBAD Tower Bldg, Sheikh Khalifa Street, Abu Dhabi, UAE", swift_code: "NBADAEAA" },
+                { id: 116, country_id: 70, name: "Habib Bank AG Zurich", address: "PO Box 3306, Beniyas Square, Deira, Dubai City", swift_code: "HBZUAEAD" },
+                { id: 117, country_id: 70, name: "HSBC Bank Middle East Limited", address: "P O Box 66, HSBC Bank Bldg, 312/45 Al Suq Rd, Bur-Dubai, Dubai City", swift_code: "BBMEAEAD" },
+                { id: 118, country_id: 70, name: "MashreqBank PSC", address: "PO Box 1250, Omer Bin Al Khattab Street, Deira, Dubai City, UAE", swift_code: "BOMLAEAD" },
+                { id: 119, country_id: 70, name: "National Bank of Fujairah Psc", address: "PO Box 887, Hamad Bin Abdulla Street, Fujairah, UAE", swift_code: "NBFUAEAF" },
+                { id: 120, country_id: 70, name: "National Bank of Umm Al-Qaiwain psc", address: "PO Box 800, NBQ Building, King Faisal Street, Umm Al-Quwain, UAE", swift_code: "UMMQAEAD" },
+                { id: 121, country_id: 70, name: "Sharjah Islamic Bank", address: "PO Box 4, Al Boorj Avenue, Sharjah, UAE", swift_code: "NBSHAEAS" },
+                { id: 122, country_id: 70, name: "The National Bank of Ras Al-Khaimah PSC (RAKBANK)", address: "PO Box 5300, RAK Operations Centre, Emirates Road, Ras Al-Khaimah, UAE", swift_code: "NRAKAEAK" },
+                
+                // United Kingdom
+                { id: 123, country_id: 71, name: "HSBC Bank plc", address: "8 Canada Square, London, E14 5HQ, UK", swift_code: "MIDLGB22" },
+                { id: 124, country_id: 71, name: "Barclays Bank PLC", address: "1 Churchill Place, London, E14 5HP, UK", swift_code: "BARCGB22" },
+                
+                // United States
+                { id: 125, country_id: 72, name: "JPMorgan Chase Bank National Association", address: "383 Madison Ave, New York, NY 10017, USA", swift_code: "CHASUS33" },
+                { id: 126, country_id: 72, name: "Bank of America NA", address: "100 W 33rd St, 4th Fl, New York, 10001, USA", swift_code: "BOFAUS3N" },
+                
+                // Vietnam
+                { id: 127, country_id: 73, name: "Vietcombank (Joint Stock Commercial Bank for Foreign Trade of Vietnam)", address: "198 Tran Quang Khai Avenue, Hanoi, Vietnam", swift_code: "BFTVVNVX" }
+            ],
+            users: [
+                { id: 1, email: "admin@example.com", password_hash: "password123", role: "admin" }
+            ],
+            audit_logs: [
+                { id: 1, user_id: 1, action: "SYSTEM_INIT", details: {}, timestamp: new Date().toISOString() }
+            ]
+        };
+
+        // DOM Elements
+        const publicPortal = document.getElementById('publicPortal');
+        const loginSection = document.getElementById('loginSection');
+        const adminPanel = document.getElementById('adminPanel');
+        const bankTableBody = document.getElementById('bankTableBody');
+        const countrySelect = document.getElementById('countrySelect');
+        const countryTableBody = document.getElementById('countryTableBody');
+        const bankAdminTableBody = document.getElementById('bankAdminTableBody');
+        const bankCountrySelect = document.getElementById('bankCountry');
+        const bankSearchInput = document.getElementById('bankSearch');
+        const bankCountDisplay = document.getElementById('bankCountDisplay');
+        const recentActivityList = document.getElementById('recentActivityList');
+        
+        // Current state
+        let currentUser = null;
+        let editingCountryId = null;
+        let editingBankId = null;
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate country dropdown in public portal
+            completeData.countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.code;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            });
+            
+            // Initialize counts in admin dashboard
+            updateDashboardCounts();
+            
+            // Add sample recent activity
+            addAuditLog("SYSTEM_STARTED", { message: "Application initialized" });
+            updateRecentActivity();
+        });
+
+        // Public Portal Functions
+        function loadBanks() {
+            const countryCode = countrySelect.value;
+            const searchTerm = bankSearchInput.value.toLowerCase();
+            
+            let filteredBanks = completeData.banks;
+            
+            // Filter by country if selected
+            if (countryCode) {
+                const country = completeData.countries.find(c => c.code === countryCode);
+                if (country) {
+                    filteredBanks = filteredBanks.filter(b => b.country_id === country.id);
+                }
+            }
+            
+            // Filter by search term if provided
+            if (searchTerm) {
+                filteredBanks = filteredBanks.filter(b => 
+                    b.name.toLowerCase().includes(searchTerm) ||
+                    b.swift_code.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            bankTableBody.innerHTML = '';
+            
+            if (filteredBanks.length === 0) {
+                bankTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No banks found matching your criteria</td></tr>';
+                bankCountDisplay.textContent = 'Showing 0 banks';
+                return;
+            }
+            
+            filteredBanks.forEach(bank => {
+                const country = completeData.countries.find(c => c.id === bank.country_id);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bank.name}</td>
+                    <td>${bank.address}</td>
+                    <td>${bank.swift_code}</td>
+                    <td>${country ? country.name : 'N/A'}</td>
+                `;
+                bankTableBody.appendChild(row);
+            });
+            
+            bankCountDisplay.textContent = `Showing ${filteredBanks.length} banks`;
+        }
+        
+        function exportToCSV() {
+            const rows = Array.from(bankTableBody.querySelectorAll('tr'));
+            if (rows.length === 0 || (rows.length === 1 && rows[0].querySelector('td').colSpan === 4)) {
+                alert('No data to export');
+                return;
+            }
+            
+            let csv = 'Bank Name,Address,SWIFT Code,Country\n';
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 4) {
+                    csv += `"${cells[0].textContent}","${cells[1].textContent}","${cells[2].textContent}","${cells[3].textContent}"\n`;
+                }
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'correspondent_banks.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            if (currentUser) {
+                addAuditLog("EXPORT_CSV", { count: rows.length });
+                updateRecentActivity();
+            }
+        }
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const title = "Correspondent Banks Report";
+            const headers = [["Bank Name", "Address", "SWIFT Code", "Country"]];
+            const rows = [];
+            
+            Array.from(bankTableBody.querySelectorAll('tr')).forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 4) {
+                    rows.push([
+                        cells[0].textContent,
+                        cells[1].textContent,
+                        cells[2].textContent,
+                        cells[3].textContent
+                    ]);
+                }
+            });
+            
+            if (rows.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            doc.text(title, 14, 15);
+            doc.autoTable({
+                head: headers,
+                body: rows,
+                startY: 20,
+                theme: 'grid',
+                headStyles: { fillColor: [44, 62, 80] }
+            });
+            
+            doc.save('correspondent_banks.pdf');
+            
+            if (currentUser) {
+                addAuditLog("EXPORT_PDF", { count: rows.length });
+                updateRecentActivity();
+            }
+        }
+        
+        // Admin Panel Functions
+        function showLogin() {
+            loginSection.style.display = 'flex';
+        }
+        
+        function hideLogin() {
+            loginSection.style.display = 'none';
+        }
+        
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // In a real app, this would validate against a backend
+            const user = completeData.users.find(u => u.email === email && u.password_hash === password);
+            
+            if (user) {
+                currentUser = user;
+                publicPortal.style.display = 'none';
+                loginSection.style.display = 'none';
+                adminPanel.style.display = 'block';
+                
+                // Load admin data
+                loadAdminCountries();
+                loadAdminBanks();
+                updateDashboardCounts();
+                updateRecentActivity();
+                
+                addAuditLog("USER_LOGIN", { email: user.email });
+            } else {
+                alert('Invalid credentials. Try admin@example.com / password123');
+            }
+        }
+        
+        function logout() {
+            addAuditLog("USER_LOGOUT", { email: currentUser.email });
+            currentUser = null;
+            publicPortal.style.display = 'block';
+            adminPanel.style.display = 'none';
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+        
+        function showAdminSection(sectionId) {
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(`admin${sectionId.charAt(0).toUpperCase() + sectionId.slice(1)}`).style.display = 'block';
+        }
+        
+        function updateDashboardCounts() {
+            document.getElementById('countryCount').textContent = completeData.countries.length;
+            document.getElementById('bankCount').textContent = completeData.banks.length;
+            document.getElementById('activityCount').textContent = completeData.audit_logs.length;
+        }
+        
+        function updateRecentActivity() {
+            recentActivityList.innerHTML = '';
+            const recentLogs = [...completeData.audit_logs]
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 5);
+            
+            recentLogs.forEach(log => {
+                const user = completeData.users.find(u => u.id === log.user_id);
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                
+                let actionText = '';
+                switch(log.action) {
+                    case 'USER_LOGIN':
+                        actionText = `User logged in: ${user.email}`;
+                        break;
+                    case 'USER_LOGOUT':
+                        actionText = `User logged out: ${user.email}`;
+                        break;
+                    case 'CREATE_BANK':
+                        actionText = `New bank created: ${log.details.name}`;
+                        break;
+                    case 'UPDATE_BANK':
+                        actionText = `Bank updated: ${log.details.name}`;
+                        break;
+                    case 'DELETE_BANK':
+                        actionText = `Bank deleted: ${log.details.name}`;
+                        break;
+                    case 'CREATE_COUNTRY':
+                        actionText = `New country added: ${log.details.name}`;
+                        break;
+                    case 'UPDATE_COUNTRY':
+                        actionText = `Country updated: ${log.details.name}`;
+                        break;
+                    case 'DELETE_COUNTRY':
+                        actionText = `Country deleted: ${log.details.name}`;
+                        break;
+                    case 'EXPORT_CSV':
+                        actionText = `Exported ${log.details.count} banks to CSV`;
+                        break;
+                    case 'EXPORT_PDF':
+                        actionText = `Exported ${log.details.count} banks to PDF`;
+                        break;
+                    case 'IMPORT_CSV':
+                        actionText = `Imported ${log.details.count} banks from CSV`;
+                        break;
+                    default:
+                        actionText = log.action;
+                }
+                
+                const date = new Date(log.timestamp).toLocaleString();
+                
+                li.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <span>${actionText}</span>
+                        <small class="text-muted">${date}</small>
+                    </div>
+                `;
+                recentActivityList.appendChild(li);
+            });
+        }
+        
+        function addAuditLog(action, details) {
+            if (!currentUser) return;
+            
+            const newId = completeData.audit_logs.length > 0 
+                ? Math.max(...completeData.audit_logs.map(l => l.id)) + 1 
+                : 1;
+                
+            completeData.audit_logs.push({
+                id: newId,
+                user_id: currentUser.id,
+                action,
+                details,
+                timestamp: new Date().toISOString()
+            });
+            
+            updateDashboardCounts();
+        }
+        
+        function loadAdminCountries() {
+            countryTableBody.innerHTML = '';
+            completeData.countries.forEach(country => {
+                const bankCount = completeData.banks.filter(b => b.country_id === country.id).length;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${country.id}</td>
+                    <td>${country.name}</td>
+                    <td>${country.code}</td>
+                    <td>${bankCount}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editCountry(${country.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCountry(${country.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                countryTableBody.appendChild(row);
+            });
+        }
+        
+        function loadAdminBanks() {
+            bankAdminTableBody.innerHTML = '';
+            completeData.banks.forEach(bank => {
+                const country = completeData.countries.find(c => c.id === bank.country_id);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bank.id}</td>
+                    <td>${bank.name}</td>
+                    <td>${country ? country.name : 'N/A'}</td>
+                    <td>${bank.swift_code}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editBank(${bank.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteBank(${bank.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                bankAdminTableBody.appendChild(row);
+            });
+        }
+        
+        function showAddCountryModal() {
+            editingCountryId = null;
+            document.getElementById('countryModalTitle').textContent = 'Add New Country';
+            document.getElementById('countryName').value = '';
+            document.getElementById('countryCode').value = '';
+            const modal = new bootstrap.Modal(document.getElementById('addCountryModal'));
+            modal.show();
+        }
+        
+        function saveCountry() {
+            const name = document.getElementById('countryName').value.trim();
+            const code = document.getElementById('countryCode').value.trim().toUpperCase();
+            
+            if (!name || !code) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            if (code.length !== 2) {
+                alert('Country code must be 2 letters');
+                return;
+            }
+            
+            if (editingCountryId) {
+                // Update existing country
+                const countryIndex = completeData.countries.findIndex(c => c.id === editingCountryId);
+                if (countryIndex !== -1) {
+                    completeData.countries[countryIndex].name = name;
+                    completeData.countries[countryIndex].code = code;
+                    
+                    addAuditLog("UPDATE_COUNTRY", { id: editingCountryId, name, code });
+                }
+            } else {
+                // Add new country
+                const newId = completeData.countries.length > 0 
+                    ? Math.max(...completeData.countries.map(c => c.id)) + 1 
+                    : 1;
+                
+                completeData.countries.push({ id: newId, name, code });
+                addAuditLog("CREATE_COUNTRY", { id: newId, name, code });
+            }
+            
+            // Update UI
+            loadAdminCountries();
+            updateDashboardCounts();
+            updateRecentActivity();
+            
+            // Update public portal dropdown
+            countrySelect.innerHTML = '<option value="">-- Select a country --</option>';
+            completeData.countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.code;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            });
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addCountryModal'));
+            modal.hide();
+            
+            alert('Country saved successfully');
+        }
+        
+        function editCountry(id) {
+            editingCountryId = id;
+            const country = completeData.countries.find(c => c.id === id);
+            if (!country) return;
+            
+            document.getElementById('countryModalTitle').textContent = 'Edit Country';
+            document.getElementById('countryName').value = country.name;
+            document.getElementById('countryCode').value = country.code;
+            
+            const modal = new bootstrap.Modal(document.getElementById('addCountryModal'));
+            modal.show();
+        }
+        
+        function deleteCountry(id) {
+            if (confirm('Are you sure you want to delete this country?')) {
+                // Check if any banks reference this country
+                const banksUsingCountry = completeData.banks.some(b => b.country_id === id);
+                if (banksUsingCountry) {
+                    alert('Cannot delete country - there are banks associated with it');
+                    return;
+                }
+                
+                const country = completeData.countries.find(c => c.id === id);
+                if (country) {
+                    addAuditLog("DELETE_COUNTRY", { id: country.id, name: country.name });
+                }
+                
+                completeData.countries = completeData.countries.filter(c => c.id !== id);
+                
+                // Update UI
+                loadAdminCountries();
+                updateDashboardCounts();
+                updateRecentActivity();
+                
+                // Update public portal dropdown
+                countrySelect.innerHTML = '<option value="">-- Select a country --</option>';
+                completeData.countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.code;
+                    option.textContent = country.name;
+                    countrySelect.appendChild(option);
+                });
+                
+                alert('Country deleted successfully');
+            }
+        }
+        
+        function showAddBankModal() {
+            editingBankId = null;
+            document.getElementById('bankModalTitle').textContent = 'Add New Bank';
+            
+            // Populate country dropdown
+            bankCountrySelect.innerHTML = '<option value="">-- Select Country --</option>';
+            completeData.countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.id;
+                option.textContent = country.name;
+                bankCountrySelect.appendChild(option);
+            });
+            
+            document.getElementById('bankName').value = '';
+            document.getElementById('bankAddress').value = '';
+            document.getElementById('bankSwift').value = '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('addBankModal'));
+            modal.show();
+        }
+        
+        function saveBank() {
+            const name = document.getElementById('bankName').value.trim();
+            const countryId = parseInt(bankCountrySelect.value);
+            const address = document.getElementById('bankAddress').value.trim();
+            const swift = document.getElementById('bankSwift').value.trim().toUpperCase();
+            
+            if (!name || !countryId || !address || !swift) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            if (!/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(swift)) {
+                alert('Invalid SWIFT code format');
+                return;
+            }
+            
+            if (editingBankId) {
+                // Update existing bank
+                const bankIndex = completeData.banks.findIndex(b => b.id === editingBankId);
+                if (bankIndex !== -1) {
+                    completeData.banks[bankIndex].name = name;
+                    completeData.banks[bankIndex].country_id = countryId;
+                    completeData.banks[bankIndex].address = address;
+                    completeData.banks[bankIndex].swift_code = swift;
+                    
+                    addAuditLog("UPDATE_BANK", { id: editingBankId, name, swift });
+                }
+            } else {
+                // Add new bank
+                const newId = completeData.banks.length > 0 
+                    ? Math.max(...completeData.banks.map(b => b.id)) + 1 
+                    : 1;
+                
+                completeData.banks.push({
+                    id: newId,
+                    country_id: countryId,
+                    name,
+                    address,
+                    swift_code: swift
+                });
+                
+                addAuditLog("CREATE_BANK", { id: newId, name, swift });
+            }
+            
+            // Update UI
+            loadAdminBanks();
+            updateDashboardCounts();
+            updateRecentActivity();
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addBankModal'));
+            modal.hide();
+            
+            alert('Bank saved successfully');
+        }
+        
+        function editBank(id) {
+            editingBankId = id;
+            const bank = completeData.banks.find(b => b.id === id);
+            if (!bank) return;
+            
+            document.getElementById('bankModalTitle').textContent = 'Edit Bank';
+            
+            // Populate country dropdown
+            bankCountrySelect.innerHTML = '<option value="">-- Select Country --</option>';
+            completeData.countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.id;
+                option.textContent = country.name;
+                if (country.id === bank.country_id) {
+                    option.selected = true;
+                }
+                bankCountrySelect.appendChild(option);
+            });
+            
+            document.getElementById('bankName').value = bank.name;
+            document.getElementById('bankAddress').value = bank.address;
+            document.getElementById('bankSwift').value = bank.swift_code;
+            
+            const modal = new bootstrap.Modal(document.getElementById('addBankModal'));
+            modal.show();
+        }
+        
+        function deleteBank(id) {
+            if (confirm('Are you sure you want to delete this bank?')) {
+                const bank = completeData.banks.find(b => b.id === id);
+                if (bank) {
+                    addAuditLog("DELETE_BANK", { id: bank.id, name: bank.name });
+                }
+                
+                completeData.banks = completeData.banks.filter(b => b.id !== id);
+                
+                // Update UI
+                loadAdminBanks();
+                updateDashboardCounts();
+                updateRecentActivity();
+                
+                alert('Bank deleted successfully');
+            }
+        }
+        
+        function showImportModal() {
+            const modal = new bootstrap.Modal(document.getElementById('importModal'));
+            modal.show();
+        }
+        
+        function importCSV() {
+            const fileInput = document.getElementById('csvFile');
+            if (!fileInput.files.length) {
+                alert('Please select a CSV file first');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            Papa.parse(file, {
+                header: false,
+                complete: function(results) {
+                    const rows = results.data;
+                    let importedCount = 0;
+                    let skippedCount = 0;
+                    
+                    // Skip header row if exists
+                    const startRow = rows[0].join(',').toLowerCase().includes('bank name') ? 1 : 0;
+                    
+                    for (let i = startRow; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (row.length < 4) continue;
+                        
+                        const [name, countryCode, address, swift] = row.map(item => item ? item.trim() : '');
+                        if (!name || !countryCode || !address || !swift) continue;
+                        
+                        const country = completeData.countries.find(c => c.code === countryCode.toUpperCase());
+                        if (!country) {
+                            skippedCount++;
+                            continue;
+                        }
+                        
+                        // Check if bank already exists
+                        const exists = completeData.banks.some(b => 
+                            b.swift_code === swift.toUpperCase() || 
+                            (b.name.toLowerCase() === name.toLowerCase() && b.country_id === country.id)
+                        );
+                        
+                        if (!exists) {
+                            const newId = completeData.banks.length > 0 
+                                ? Math.max(...completeData.banks.map(b => b.id)) + 1 
+                                : 1;
+                            
+                            completeData.banks.push({
+                                id: newId,
+                                country_id: country.id,
+                                name: name,
+                                address: address,
+                                swift_code: swift.toUpperCase()
+                            });
+                            importedCount++;
+                        } else {
+                            skippedCount++;
+                        }
+                    }
+                    
+                    // Update UI
+                    loadAdminBanks();
+                    updateDashboardCounts();
+                    addAuditLog("IMPORT_CSV", { count: importedCount });
+                    updateRecentActivity();
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+                    modal.hide();
+                    
+                    alert(`Successfully imported ${importedCount} banks. ${skippedCount} rows were skipped.`);
+                },
+                error: function(error) {
+                    alert('Error parsing CSV file: ' + error.message);
+                }
+            });
+        }
+        
+        // Event Listeners
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            login();
+        });
+        
+        bankSearchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                loadBanks();
+            }
+        });
+    </script>
+</body>
+</html>
